@@ -1,13 +1,40 @@
 import Order from "../models/orderModel.js";
+import { existsSync } from "node:fs";
+import path from "node:path";
 
 import { printData, startPrinterServer } from "node-thermal-printer-js";
 
 let orderStream = null;
 
+const resolveBundledPython = () => {
+  const candidates = process.platform === "win32"
+    ? [
+      path.join(process.cwd(), "runtime-environments", "python", "python.exe"),
+      path.join(process.cwd(), "runtime-environments", "python", "python"),
+    ]
+    : [
+      path.join(process.cwd(), "runtime-environments", "python", "python"),
+      path.join(process.cwd(), "runtime-environments", "python", "python3"),
+      path.join(process.cwd(), "runtime-environments", "python", "python.exe"),
+    ];
+
+  return candidates.find((candidate) => existsSync(candidate));
+};
+
 export const connectPrinter = async () => {
+  // Allow quick-start or CI to disable BLE server if not available
+  if (process.env.PRINTER_BLE_DISABLE === "1") {
+    console.log("BLE disabled via PRINTER_BLE_DISABLE=1; skipping printer server startup");
+    return;
+  }
+
   try {
+    const bundledPython =
+      process.env.PRINTER_PYTHON_CMD || resolveBundledPython();
+
     return await startPrinterServer({
       bleName: process.env.BLE_NAME,
+      pythonCmd: bundledPython,
       chunkSize: 244,
       delayMs: 0,
       pair: false,
