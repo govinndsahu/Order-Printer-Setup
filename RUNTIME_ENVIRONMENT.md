@@ -24,6 +24,24 @@ Quick usage
 
   source runtime-environments/activate.sh
 
+  If the terminal was already open and had previously resolved `npm`/`node`, start a fresh shell or run `hash -r` after sourcing so bash forgets the old command path.
+
+  If your shell does not support `source`, use:
+
+  . runtime-environments/activate.sh
+
+  That form is POSIX-compatible and works in more shells.
+
+No-activation quick start
+
+- Bash / WSL:
+
+  ./run-dev.sh
+
+- Windows CMD:
+
+  run-dev.bat
+
 Direct invocation (no activation)
 
 - Node: `runtime-environments/nodejs/node.exe app.js` or `runtime-environments/nodejs\node.exe script.js`
