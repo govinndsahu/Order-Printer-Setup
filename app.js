@@ -2,7 +2,11 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import { stopPrinterServer } from "node-thermal-printer-js";
 import { connectDB } from "./config/db.js";
-import { connectPrinter, startOrderStream, stopOrderStream } from "./utils/utils.js";
+import {
+  connectPrinter,
+  startOrderStream,
+  stopOrderStream,
+} from "./utils/utils.js";
 
 await connectDB();
 
