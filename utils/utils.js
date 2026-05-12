@@ -2,21 +2,39 @@ import Order from "../models/orderModel.js";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-import { printData, startPrinterServer } from "node-thermal-printer-js";
+import {
+  printData,
+  startPrinterServer,
+  stopPrinterServer,
+} from "node-thermal-printer-js";
+import { connectDB } from "../config/db.js";
+import mongoose from "mongoose";
 
 let orderStream = null;
+let isRestarting = false;
 
 const resolveBundledPython = () => {
-  const candidates = process.platform === "win32"
-    ? [
-      path.join(process.cwd(), "runtime-environments", "python", "python.exe"),
-      path.join(process.cwd(), "runtime-environments", "python", "python"),
-    ]
-    : [
-      path.join(process.cwd(), "runtime-environments", "python", "python"),
-      path.join(process.cwd(), "runtime-environments", "python", "python3"),
-      path.join(process.cwd(), "runtime-environments", "python", "python.exe"),
-    ];
+  const candidates =
+    process.platform === "win32"
+      ? [
+          path.join(
+            process.cwd(),
+            "runtime-environments",
+            "python",
+            "python.exe",
+          ),
+          path.join(process.cwd(), "runtime-environments", "python", "python"),
+        ]
+      : [
+          path.join(process.cwd(), "runtime-environments", "python", "python"),
+          path.join(process.cwd(), "runtime-environments", "python", "python3"),
+          path.join(
+            process.cwd(),
+            "runtime-environments",
+            "python",
+            "python.exe",
+          ),
+        ];
 
   return candidates.find((candidate) => existsSync(candidate));
 };
@@ -24,7 +42,9 @@ const resolveBundledPython = () => {
 export const connectPrinter = async () => {
   // Allow quick-start or CI to disable BLE server if not available
   if (process.env.PRINTER_BLE_DISABLE === "1") {
-    console.log("BLE disabled via PRINTER_BLE_DISABLE=1; skipping printer server startup");
+    console.log(
+      "BLE disabled via PRINTER_BLE_DISABLE=1; skipping printer server startup",
+    );
     return;
   }
 
@@ -86,11 +106,13 @@ export const startOrderStream = async () => {
       console.log(`Printed order: ${order._id}`);
     } catch (error) {
       console.error("Failed to print order from change stream:", error);
+      await restartServer();
     }
   });
 
-  orderStream.on("error", (error) => {
+  orderStream.on("error", async (error) => {
     console.error("Change stream error:", error);
+    await restartServer();
   });
 
   console.log("Listening for new order inserts via MongoDB change stream...");
@@ -103,4 +125,48 @@ export const stopOrderStream = async () => {
 
   await orderStream.close();
   orderStream = null;
+};
+
+export const restartServer = async () => {
+  if (isRestarting) {
+    console.log("Server restart already in progress...");
+    return;
+  }
+
+  isRestarting = true;
+  console.log("🔄 Restarting server...");
+
+  try {
+    // Clean up existing connections
+    await stopOrderStream();
+    await mongoose.disconnect();
+    await stopPrinterServer();
+    console.log("✓ Cleanup completed");
+  } catch (error) {
+    console.error("Error during cleanup:", error);
+  }
+
+  // Wait a bit before restarting
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  try {
+    // Restart the server
+    await runServer();
+    console.log("✓ Server restarted successfully");
+  } catch (error) {
+    console.error("Failed to restart server:", error);
+    isRestarting = false;
+    // Retry after delay
+    setTimeout(() => restartServer(), 5000);
+  }
+
+  isRestarting = false;
+};
+
+export const runServer = async () => {
+  await connectDB();
+
+  await connectPrinter();
+
+  await startOrderStream();
 };

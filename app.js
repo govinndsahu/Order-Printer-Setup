@@ -1,20 +1,23 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import { stopPrinterServer } from "node-thermal-printer-js";
-import { connectDB } from "./config/db.js";
-import {
-  connectPrinter,
-  startOrderStream,
-  stopOrderStream,
-} from "./utils/utils.js";
+import { runServer, stopOrderStream, restartServer } from "./utils/utils.js";
 
-await connectDB();
+await runServer();
 
-await connectPrinter();
+// Handle process-level errors
+process.on("uncaughtException", async (error) => {
+  console.error("🚨 Uncaught Exception:", error);
+  await restartServer();
+});
 
-await startOrderStream();
+process.on("unhandledRejection", async (reason, promise) => {
+  console.error("🚨 Unhandled Rejection at:", promise, "reason:", reason);
+  await restartServer();
+});
 
 process.on("SIGINT", async () => {
+  console.log("Shutting down gracefully...");
   await stopOrderStream();
   await mongoose.disconnect();
   await stopPrinterServer();
@@ -23,6 +26,7 @@ process.on("SIGINT", async () => {
 });
 
 process.on("SIGTERM", async () => {
+  console.log("Shutting down gracefully...");
   await stopOrderStream();
   await mongoose.disconnect();
   await stopPrinterServer();
