@@ -40,6 +40,7 @@ Optional variables:
 ```env
 PRINTER_BLE_DISABLE=1
 PRINTER_PYTHON_CMD=path-to-python-executable
+MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
 TRANSPORT=your-printer-transport
 ```
 
@@ -47,6 +48,7 @@ TRANSPORT=your-printer-transport
 - `BLE_NAME` is passed to the printer server when BLE startup is enabled.
 - `PRINTER_BLE_DISABLE=1` skips printer-server startup for quick local development or CI.
 - `PRINTER_PYTHON_CMD` overrides the bundled Python executable if you need a custom path.
+- `MONGODB_DNS_SERVERS` overrides the DNS resolvers used for `mongodb+srv://` lookups. Use a comma-separated list such as `1.1.1.1,8.8.8.8`. Set it to `system` to keep the OS resolver.
 - `TRANSPORT` is forwarded to our printer package when an order is printed.
 
 ## Running
@@ -85,3 +87,4 @@ The app handles `SIGINT` and `SIGTERM`, stops the order stream, disconnects from
 - If the app connects to MongoDB but never prints, confirm that your MongoDB deployment supports change streams.
 - If BLE hardware is unavailable, set `PRINTER_BLE_DISABLE=1` to skip printer-server startup.
 - If the bundled Python runtime is not usable on your machine, set `PRINTER_PYTHON_CMD` to a working Python executable.
+- If you see `querySrv ECONNREFUSED` while connecting to Atlas, set `MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8` in your `.env` or switch to a standard `mongodb://` connection string.
