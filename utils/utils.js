@@ -61,6 +61,7 @@ export const connectPrinter = async () => {
     });
   } catch (error) {
     console.log(error);
+    await restartServer();
   }
 };
 

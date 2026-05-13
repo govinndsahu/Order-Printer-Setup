@@ -6,8 +6,6 @@ const defaultMongoDnsServers = ["1.1.1.1", "8.8.8.8"];
 const configureMongoDns = () => {
   const connectionUrl = process.env.MONGODB_CONNECTION_URL ?? "";
 
-  console.log(connectionUrl);
-
   if (!connectionUrl.startsWith("mongodb+srv://")) {
     return;
   }
