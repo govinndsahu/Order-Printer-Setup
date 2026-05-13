@@ -1,27 +1,5 @@
-import dns from "node:dns";
 import mongoose from "mongoose";
-
-const defaultMongoDnsServers = ["1.1.1.1", "8.8.8.8"];
-
-const configureMongoDns = () => {
-  const connectionUrl = process.env.MONGODB_CONNECTION_URL ?? "";
-
-  if (!connectionUrl.startsWith("mongodb+srv://")) {
-    return;
-  }
-
-  if (process.env.MONGODB_DNS_SERVERS?.toLowerCase() === "system") {
-    return;
-  }
-
-  const configuredServers = process.env.MONGODB_DNS_SERVERS
-    ? process.env.MONGODB_DNS_SERVERS.split(",")
-        .map((server) => server.trim())
-        .filter(Boolean)
-    : defaultMongoDnsServers;
-
-  dns.setServers(configuredServers);
-};
+import { configureMongoDns } from "../utils/utils.js";
 
 export const connectDB = async () => {
   try {

@@ -1,6 +1,7 @@
 import Order from "../models/orderModel.js";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import dns from "node:dns";
 
 import {
   printData,
@@ -12,6 +13,8 @@ import mongoose from "mongoose";
 
 let orderStream = null;
 let isRestarting = false;
+
+const defaultMongoDnsServers = ["1.1.1.1", "8.8.8.8"];
 
 const resolveBundledPython = () => {
   const candidates =
@@ -170,4 +173,24 @@ export const runServer = async () => {
   await connectPrinter();
 
   await startOrderStream();
+};
+
+export const configureMongoDns = () => {
+  const connectionUrl = process.env.MONGODB_CONNECTION_URL ?? "";
+
+  if (!connectionUrl.startsWith("mongodb+srv://")) {
+    return;
+  }
+
+  if (process.env.MONGODB_DNS_SERVERS?.toLowerCase() === "system") {
+    return;
+  }
+
+  const configuredServers = process.env.MONGODB_DNS_SERVERS
+    ? process.env.MONGODB_DNS_SERVERS.split(",")
+        .map((server) => server.trim())
+        .filter(Boolean)
+    : defaultMongoDnsServers;
+
+  dns.setServers(configuredServers);
 };
