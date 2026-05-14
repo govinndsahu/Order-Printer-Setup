@@ -8,6 +8,7 @@ import {
   startPrinterServer,
   stopPrinterServer,
 } from "node-thermal-printer-js";
+
 import { connectDB } from "../config/db.js";
 import mongoose from "mongoose";
 

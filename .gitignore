@@ -2,3 +2,4 @@ node_modules
 runtime-environments
 .env
 .gitignore
+printerServer.zip
