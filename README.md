@@ -32,7 +32,7 @@ Create a `.env` file in the project root with at least:
 
 ```env
 MONGODB_CONNECTION_URL=your-mongodb-connection-string
-BLE_NAME=your-printer-ble-name
+BLUETOOTH_DEVICE_NAME=your-printer-ble-name
 ```
 
 Optional variables:
@@ -45,7 +45,7 @@ TRANSPORT=your-printer-transport
 ```
 
 - `MONGODB_CONNECTION_URL` is required for the database connection.
-- `BLE_NAME` is passed to the printer server when BLE startup is enabled.
+- `BLUETOOTH_DEVICE_NAME` is passed to the printer server when BLE startup is enabled.
 - `PRINTER_BLE_DISABLE=1` skips printer-server startup for quick local development or CI.
 - `PRINTER_PYTHON_CMD` overrides the bundled Python executable if you need a custom path.
 - `MONGODB_DNS_SERVERS` overrides the DNS resolvers used for `mongodb+srv://` lookups. Use a comma-separated list such as `1.1.1.1,8.8.8.8`. Set it to `system` to keep the OS resolver.

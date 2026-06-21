@@ -21,24 +21,24 @@ const resolveBundledPython = () => {
   const candidates =
     process.platform === "win32"
       ? [
-          path.join(
-            process.cwd(),
-            "runtime-environments",
-            "python",
-            "python.exe",
-          ),
-          path.join(process.cwd(), "runtime-environments", "python", "python"),
-        ]
+        path.join(
+          process.cwd(),
+          "runtime-environments",
+          "python",
+          "python.exe",
+        ),
+        path.join(process.cwd(), "runtime-environments", "python", "python"),
+      ]
       : [
-          path.join(process.cwd(), "runtime-environments", "python", "python"),
-          path.join(process.cwd(), "runtime-environments", "python", "python3"),
-          path.join(
-            process.cwd(),
-            "runtime-environments",
-            "python",
-            "python.exe",
-          ),
-        ];
+        path.join(process.cwd(), "runtime-environments", "python", "python"),
+        path.join(process.cwd(), "runtime-environments", "python", "python3"),
+        path.join(
+          process.cwd(),
+          "runtime-environments",
+          "python",
+          "python.exe",
+        ),
+      ];
 
   return candidates.find((candidate) => existsSync(candidate));
 };
@@ -57,7 +57,7 @@ export const connectPrinter = async () => {
       process.env.PRINTER_PYTHON_CMD || resolveBundledPython();
 
     return await startPrinterServer({
-      bleName: process.env.BLE_NAME,
+      bleName: process.env.BLUETOOTH_DEVICE_NAME,
       pythonCmd: bundledPython,
       chunkSize: 244,
       delayMs: 0,
@@ -189,8 +189,8 @@ export const configureMongoDns = () => {
 
   const configuredServers = process.env.MONGODB_DNS_SERVERS
     ? process.env.MONGODB_DNS_SERVERS.split(",")
-        .map((server) => server.trim())
-        .filter(Boolean)
+      .map((server) => server.trim())
+      .filter(Boolean)
     : defaultMongoDnsServers;
 
   dns.setServers(configuredServers);
